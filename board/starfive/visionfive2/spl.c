@@ -41,7 +41,7 @@ static const struct starfive_vf2_pro milk_v_mars[] = {
 	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
 		"motorcomm,rx-data-drv-microamp", "2910"},
 	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
-		"rx-internal-delay-ps", "1900"},
+		"rx-internal-delay-ps", "1500"},
 	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
 		"tx-internal-delay-ps", "1500"},
 };
@@ -68,9 +68,7 @@ static const struct starfive_vf2_pro starfive_verb[] = {
 	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
 		"motorcomm,rx-data-drv-microamp", "2910"},
 	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
-		"rx-internal-delay-ps", "1900"},
-	{"/soc/ethernet@16030000/mdio/ethernet-phy@0",
-		"tx-internal-delay-ps", "1500"},
+		"rx-internal-delay-ps", "1500"},
 
 	{"/soc/ethernet@16040000/mdio/ethernet-phy@1",
 		"motorcomm,tx-clk-adj-enabled", NULL},
@@ -170,23 +168,32 @@ void spl_fdt_fixup_mars_cm(void *fdt)
 {
 	const char *compat;
 	const char *model;
+	int compat_size;
 
 	spl_fdt_fixup_mars(fdt);
 
 	if (!get_mmc_size_from_eeprom()) {
 		int offset;
+		static const char
+		compat_cm_lite[] = "milkv,mars-cm-lite\0starfive,jh7110";
 
 		model = "Milk-V Mars CM Lite";
-		compat = "milkv,mars-cm-lite\0starfive,jh7110";
+		compat = compat_cm_lite;
+		compat_size = sizeof(compat_cm_lite);
 
 		offset = fdt_path_offset(fdt, "/soc/pinctrl/mmc0-pins/mmc0-pins-rest");
 		/* GPIOMUX(22, GPOUT_SYS_SDIO0_RST, GPOEN_ENABLE, GPI_NONE) */
 		fdt_setprop_u32(fdt, offset, "pinmux", 0xff130016);
 	} else {
+		static const char
+		compat_cm[] = "milkv,mars-cm\0starfive,jh7110";
+
 		model = "Milk-V Mars CM";
-		compat = "milkv,mars-cm\0starfive,jh7110";
+		compat = compat_cm;
+		compat_size = sizeof(compat_cm);
 	}
-	fdt_setprop(fdt, fdt_path_offset(fdt, "/"), "compatible", compat, sizeof(compat));
+	fdt_setprop(fdt, fdt_path_offset(fdt, "/"),
+		    "compatible", compat, compat_size);
 	fdt_setprop_string(fdt, fdt_path_offset(fdt, "/"), "model", model);
 }
 
